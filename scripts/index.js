@@ -6,6 +6,7 @@ const respawnPosition = { x: 4, y: 0 };
 // VARIABLES
 let dropCounter = 0;
 let dropInterval = 1000;
+let timerID;
 
 // POLYGON
 let polygon = [
@@ -106,10 +107,14 @@ function CurrentTetromino(shape, position) {
   };
 
   this.rotate = function() {
+    // TODO: wall jump
+    undraw({ shape: _shape, position: { x: _x, y: _y }});
     rotate(tetromino);
   };
 
   this.drop = function() {
+    // TODO: condition && freeze()
+    undraw({ shape: _shape, position: { x: _x, y: _y }});
     _y++;
   };
 
@@ -138,15 +143,25 @@ function undraw(tetromino) {
   };
 };
 
+function renderPlayground() {
+  // ...
+};
+
+function pause() {
+  clearInterval(timerID);
+};
+
+function start() {
+
+};
+
 function main() {
   const randomTetrominoShape = getTetromino("j");
   const tetromino = new CurrentTetromino(randomTetrominoShape, respawnPosition);
-  draw(tetromino.get());
 
-  let timerId = setInterval(function() {
-    tetromino.drop();
+  timerID = setInterval(function() {
     draw(tetromino.get());
-    console.log(tetromino.get());
+    tetromino.drop();
   }, dropInterval);
   
   // clearInterval(timerId);
