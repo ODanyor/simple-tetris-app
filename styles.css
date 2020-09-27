@@ -1,0 +1,20 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  margin: 0 auto;
+  max-width: 350px;
+}
+
+.playground {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.block {
+  width: 35px;
+  height: 35px;
+}

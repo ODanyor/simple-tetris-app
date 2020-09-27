@@ -1,4 +1,8 @@
+// DOM ELEMENTS
 const root = document.querySelector("#root");
+
+const playGround = document.createElement("div");
+playGround.className = "playground";
 
 // CONTSTANTS
 const respawnPosition = { x: 4, y: 0 };
@@ -6,7 +10,8 @@ const respawnPosition = { x: 4, y: 0 };
 // VARIABLES
 let dropCounter = 0;
 let dropInterval = 1000;
-let timerID;
+let dropIntervalID;
+let tetromino;
 
 // POLYGON
 let polygon = [
@@ -33,7 +38,7 @@ let polygon = [
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
-  [9,9,9,9,9,9,9,9,9,9],
+  [0,0,0,0,0,0,0,0,0,0],
 ];
 
 function getTetromino(name) {
@@ -75,15 +80,37 @@ function getTetromino(name) {
       ]
     case "i":
       return [
-        [0,0,7,0],
-        [0,0,7,0],
-        [0,0,7,0],
-        [0,0,7,0],
+        [0,7,0,0],
+        [0,7,0,0],
+        [0,7,0,0],
+        [0,7,0,0],
       ]
     default:
       return null;
   }
-}
+};
+
+function getColor(number) {
+  switch(number) {
+    case 1:
+      return "#FFFF00";
+    case 2:
+      return "#F39C12";
+    case 3:
+      return "#FF00FF";
+    case 4:
+      return "#FF0000";
+    case 5:
+      return "#008000";
+    case 6:
+      return "#800080";
+    case 7:
+      return "#00FFFF";
+
+    default:
+      return "#EEEEEE";
+  };
+};
 
 function CurrentTetromino(shape, position) {
   let _shape = shape;
@@ -92,11 +119,12 @@ function CurrentTetromino(shape, position) {
   
   function rotate(tetro) {
     let rotatedTetro = [];
-
+    
     for (let i = 0; i < tetro.length; i++) {
       let row = [];
-
+      
       for (let j = 0; j < tetro[i].length; j++) {
+        // TODO: wall jump
         row.push(tetro[(tetro.length - 1) - j][i]);
       }
 
@@ -107,15 +135,35 @@ function CurrentTetromino(shape, position) {
   };
 
   this.rotate = function() {
-    // TODO: wall jump
     undraw({ shape: _shape, position: { x: _x, y: _y }});
     rotate(tetromino);
   };
 
+  this.move = function(action) {
+    switch(action) {
+      case "left":
+        _x--;
+        break;
+      case "right":
+        _x++;
+        break;
+      case "down":
+        _y++;
+        break;
+      case "rotate":
+        this.rotate();
+        break;
+
+      default:
+        return console.log("Wrong action");
+    };
+  };
+
   this.drop = function() {
-    // TODO: condition && freeze()
     undraw({ shape: _shape, position: { x: _x, y: _y }});
-    _y++;
+    if (polygon[_y + 1]) {
+      _y++;
+    } else freeze();
   };
 
   this.get = function() {
@@ -126,7 +174,7 @@ function CurrentTetromino(shape, position) {
 function draw(tetromino) {
   for (let i = 0; i < tetromino.shape.length; i++) {
     for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (tetromino.shape[i][j] !== 0) {
+      if (polygon[tetromino.position.y + i]) {
         polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
       };
     };
@@ -136,35 +184,84 @@ function draw(tetromino) {
 function undraw(tetromino) {
   for (let i = 0; i < tetromino.shape.length; i++) {
     for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (tetromino.shape[i][j] !== 0) {
+      if (polygon[tetromino.position.y + i]) {
         polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
       };
     };
   };
 };
 
-function renderPlayground() {
-  // ...
+function freeze() {
+  clearInterval(dropIntervalID);
+  round();
 };
 
+function renderPlayground() {
+  playGround.innerHTML = "";
+
+  polygon.forEach((polygonRow) => {
+    polygonRow.forEach((polygonRowItem) => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.style.backgroundColor = getColor(polygonRowItem);
+
+      playGround.appendChild(block);
+    });
+  });
+};
+
+function round() {
+  const tetrominos = ["o", "l", "j", "s", "z", "t", "i"];
+  const randomTetrominoShape = getTetromino(tetrominos[Math.floor(Math.random() * tetrominos.length)]);
+
+  tetromino = new CurrentTetromino(randomTetrominoShape, respawnPosition);
+
+  dropIntervalID = setInterval(function() {
+    tetromino.drop();
+    draw(tetromino.get());
+
+    renderPlayground();
+  }, dropInterval);
+}
+
 function pause() {
-  clearInterval(timerID);
+  clearInterval(dropIntervalID);
 };
 
 function start() {
+  round();
 
+  window.addEventListener("keydown", function(event) {
+    switch(event.keyCode) {
+      case 37:
+        tetromino.move("left");
+        renderPlayground();
+        clearInterval(dropIntervalID);
+        break;
+      case 38:
+        tetromino.move("rotate");
+        renderPlayground();
+        break;
+      case 39:
+        tetromino.move("right");
+        renderPlayground();
+        break;
+      case 40:
+        tetromino.move("down");
+        renderPlayground();
+        break;
+
+      default:
+        return console.log("Wrong key is pressed!");
+    };
+  });
 };
 
 function main() {
-  const randomTetrominoShape = getTetromino("j");
-  const tetromino = new CurrentTetromino(randomTetrominoShape, respawnPosition);
+  root.appendChild(playGround);
+  renderPlayground();
 
-  timerID = setInterval(function() {
-    draw(tetromino.get());
-    tetromino.drop();
-  }, dropInterval);
-  
-  // clearInterval(timerId);
+  start();
 };
 
 root.addEventListener("onload", main());
