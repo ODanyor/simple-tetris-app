@@ -9,7 +9,7 @@ const respawnPosition = { x: 4, y: 0 };
 
 // VARIABLES
 let dropCounter = 0;
-let dropInterval = 1000;
+let dropInterval = 500;
 let dropIntervalID;
 let tetromino;
 
@@ -135,7 +135,6 @@ function CurrentTetromino(shape, position) {
   };
 
   this.rotate = function() {
-    undraw({ shape: _shape, position: { x: _x, y: _y }});
     rotate(tetromino);
   };
 
@@ -155,15 +154,14 @@ function CurrentTetromino(shape, position) {
         break;
 
       default:
-        return console.log("Wrong action");
+        break;
     };
+    draw({ shape: _shape, position: { x: _x, y: _y }});
   };
 
   this.drop = function() {
     undraw({ shape: _shape, position: { x: _x, y: _y }});
-    if (polygon[_y + 1]) {
-      _y++;
-    } else freeze();
+    _y++;
   };
 
   this.get = function() {
@@ -175,7 +173,15 @@ function draw(tetromino) {
   for (let i = 0; i < tetromino.shape.length; i++) {
     for (let j = 0; j < tetromino.shape[i].length; j++) {
       if (polygon[tetromino.position.y + i]) {
-        polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
+        if (tetromino.shape[i][j]) {
+          if (polygon[tetromino.position.y + i][tetromino.position.x + j]) {
+            freeze();
+          } else {
+            polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
+          };
+        };
+      } else {
+        freeze();
       };
     };
   };
@@ -184,9 +190,7 @@ function draw(tetromino) {
 function undraw(tetromino) {
   for (let i = 0; i < tetromino.shape.length; i++) {
     for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (polygon[tetromino.position.y + i]) {
-        polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
-      };
+      polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
     };
   };
 };
@@ -232,28 +236,25 @@ function start() {
   round();
 
   window.addEventListener("keydown", function(event) {
+    undraw(tetromino.get());
     switch(event.keyCode) {
       case 37:
         tetromino.move("left");
-        renderPlayground();
-        clearInterval(dropIntervalID);
         break;
       case 38:
         tetromino.move("rotate");
-        renderPlayground();
         break;
       case 39:
         tetromino.move("right");
-        renderPlayground();
         break;
       case 40:
         tetromino.move("down");
-        renderPlayground();
         break;
 
       default:
-        return console.log("Wrong key is pressed!");
+        break;
     };
+    renderPlayground();
   });
 };
 
