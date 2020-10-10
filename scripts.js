@@ -172,23 +172,23 @@ function CurrentTetromino(shape, position) {
 };
 
 function draw(tetromino) {
-  for (let i = 0; i < tetromino.shape.length; i++) {
-    for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (polygon[tetromino.position.y + i]) {
-        polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
+  tetromino.shape.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (polygon[tetromino.position.y + y]) {
+        polygon[tetromino.position.y + y][tetromino.position.x + x] = cell;
       };
-    };
-  };
+    })
+  });
 };
 
 function undraw(tetromino) {
-  for (let i = 0; i < tetromino.shape.length; i++) {
-    for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (polygon[tetromino.position.y + i]) {
-        polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
+  tetromino.shape.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (polygon[tetromino.position.y + y]) {
+        polygon[tetromino.position.y + y][tetromino.position.x + x] = 0;
       };
-    };
-  };
+    })
+  });
 };
 
 function freeze() {
