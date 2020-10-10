@@ -9,7 +9,7 @@ const respawnPosition = { x: 4, y: 0 };
 
 // VARIABLES
 let dropCounter = 0;
-let dropInterval = 1000;
+let dropInterval = 500;
 let dropIntervalID;
 let tetromino;
 
@@ -135,7 +135,6 @@ function CurrentTetromino(shape, position) {
   };
 
   this.rotate = function() {
-    undraw({ shape: _shape, position: { x: _x, y: _y }});
     rotate(tetromino);
   };
 
@@ -155,15 +154,14 @@ function CurrentTetromino(shape, position) {
         break;
 
       default:
-        return console.log("Wrong action");
+        break;
     };
+    draw({ shape: _shape, position: { x: _x, y: _y }});
   };
 
   this.drop = function() {
     undraw({ shape: _shape, position: { x: _x, y: _y }});
-    if (polygon[_y + 1]) {
-      _y++;
-    } else freeze();
+    _y++;
   };
 
   this.get = function() {
@@ -172,16 +170,32 @@ function CurrentTetromino(shape, position) {
 };
 
 function draw(tetromino) {
+<<<<<<< HEAD
   tetromino.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (polygon[tetromino.position.y + y]) {
         polygon[tetromino.position.y + y][tetromino.position.x + x] = cell;
+=======
+  for (let i = 0; i < tetromino.shape.length; i++) {
+    for (let j = 0; j < tetromino.shape[i].length; j++) {
+      if (polygon[tetromino.position.y + i]) {
+        if (tetromino.shape[i][j]) {
+          if (polygon[tetromino.position.y + i][tetromino.position.x + j]) {
+            freeze();
+          } else {
+            polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
+          };
+        };
+      } else {
+        freeze();
+>>>>>>> 0861798ab390759a786ae63a1d81afed5eb4c808
       };
     })
   });
 };
 
 function undraw(tetromino) {
+<<<<<<< HEAD
   tetromino.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (polygon[tetromino.position.y + y]) {
@@ -189,6 +203,13 @@ function undraw(tetromino) {
       };
     })
   });
+=======
+  for (let i = 0; i < tetromino.shape.length; i++) {
+    for (let j = 0; j < tetromino.shape[i].length; j++) {
+      polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
+    };
+  };
+>>>>>>> 0861798ab390759a786ae63a1d81afed5eb4c808
 };
 
 function freeze() {
@@ -232,28 +253,25 @@ function start() {
   round();
 
   window.addEventListener("keydown", function(event) {
+    undraw(tetromino.get());
     switch(event.keyCode) {
       case 37:
         tetromino.move("left");
-        renderPlayground();
-        clearInterval(dropIntervalID);
         break;
       case 38:
         tetromino.move("rotate");
-        renderPlayground();
         break;
       case 39:
         tetromino.move("right");
-        renderPlayground();
         break;
       case 40:
         tetromino.move("down");
-        renderPlayground();
         break;
 
       default:
-        return console.log("Wrong key is pressed!");
+        break;
     };
+    renderPlayground();
   });
 };
 
