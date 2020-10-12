@@ -6,14 +6,13 @@ playGround.className = "playground";
 
 // CONTSTANTS
 const respawnPosition = { x: 4, y: 0 };
+const tetrominos = ["o", "l", "j", "s", "z", "t", "i"];
 
 // VARIABLES
 let dropCounter = 0;
-let dropInterval = 500;
+let dropInterval = 200;
 let dropIntervalID;
 let tetromino;
-
-// POLYGON
 let polygon = [
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
@@ -129,12 +128,13 @@ function CurrentTetromino(shape, position) {
       }
 
       rotatedTetro.push(row);
-    }
+    };
 
     _shape = rotatedTetro;
   };
 
   this.rotate = function() {
+    undraw({ shape: _shape, position: { x: _x, y: _y }});
     rotate(tetromino);
   };
 
@@ -156,12 +156,23 @@ function CurrentTetromino(shape, position) {
       default:
         break;
     };
-    draw({ shape: _shape, position: { x: _x, y: _y }});
   };
 
   this.drop = function() {
-    undraw({ shape: _shape, position: { x: _x, y: _y }});
-    _y++;
+    const isDownRowNotEmpty = _shape[_shape.length - 1].some((cell) => cell);
+
+    if (!polygon[_y + _shape.length]) {
+      if (!isDownRowNotEmpty && polygon[_y + _shape.length - 1]) {
+        undraw({ shape: _shape, position: { x: _x, y: _y }});
+        _y++;
+        return;
+      };
+
+      freeze();
+    } else {
+      undraw({ shape: _shape, position: { x: _x, y: _y }});
+      _y++
+    };
   };
 
   this.get = function() {
@@ -170,46 +181,27 @@ function CurrentTetromino(shape, position) {
 };
 
 function draw(tetromino) {
-<<<<<<< HEAD
   tetromino.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (polygon[tetromino.position.y + y]) {
-        polygon[tetromino.position.y + y][tetromino.position.x + x] = cell;
-=======
-  for (let i = 0; i < tetromino.shape.length; i++) {
-    for (let j = 0; j < tetromino.shape[i].length; j++) {
-      if (polygon[tetromino.position.y + i]) {
-        if (tetromino.shape[i][j]) {
-          if (polygon[tetromino.position.y + i][tetromino.position.x + j]) {
-            freeze();
-          } else {
-            polygon[tetromino.position.y + i][tetromino.position.x + j] = tetromino.shape[i][j];
-          };
+        if (cell) {
+          polygon[tetromino.position.y + y][tetromino.position.x + x] = cell;
         };
-      } else {
-        freeze();
->>>>>>> 0861798ab390759a786ae63a1d81afed5eb4c808
       };
-    })
+    });
   });
 };
 
 function undraw(tetromino) {
-<<<<<<< HEAD
   tetromino.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (polygon[tetromino.position.y + y]) {
-        polygon[tetromino.position.y + y][tetromino.position.x + x] = 0;
+        if (cell) {
+          polygon[tetromino.position.y + y][tetromino.position.x + x] = 0;
+        };
       };
-    })
+    });
   });
-=======
-  for (let i = 0; i < tetromino.shape.length; i++) {
-    for (let j = 0; j < tetromino.shape[i].length; j++) {
-      polygon[tetromino.position.y + i][tetromino.position.x + j] = 0;
-    };
-  };
->>>>>>> 0861798ab390759a786ae63a1d81afed5eb4c808
 };
 
 function freeze() {
@@ -232,7 +224,6 @@ function renderPlayground() {
 };
 
 function round() {
-  const tetrominos = ["o", "l", "j", "s", "z", "t", "i"];
   const randomTetrominoShape = getTetromino(tetrominos[Math.floor(Math.random() * tetrominos.length)]);
 
   tetromino = new CurrentTetromino(randomTetrominoShape, respawnPosition);
@@ -243,7 +234,7 @@ function round() {
 
     renderPlayground();
   }, dropInterval);
-}
+};
 
 function pause() {
   clearInterval(dropIntervalID);
@@ -267,9 +258,9 @@ function start() {
       case 40:
         tetromino.move("down");
         break;
-
-      default:
-        break;
+        
+        default:
+          break;
     };
     renderPlayground();
   });
