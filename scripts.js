@@ -221,16 +221,20 @@ function round() {
 
   tetromino = new CurrentTetromino(randomTetrominoShape, respawnPosition)
 
+  play()
+}
+
+function pause() {
+  clearInterval(dropIntervalID)
+}
+
+function play() {
   dropIntervalID = setInterval(function() {
     tetromino.drop()
     draw(tetromino.get())
 
     renderPlayground()
   }, dropInterval)
-}
-
-function pause() {
-  clearInterval(dropIntervalID)
 }
 
 function start() {
