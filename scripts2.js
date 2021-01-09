@@ -1,23 +1,54 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
-const constants = { TIMER_INTERVAL: 1000 }; // constants
+
+const variables = {
+  T_INTERVAL: 1000, // timer interval
+  D_INTERVAL: 1000, // initial drop interval
+};
 
 class Game {
   constructor (name) {
     this.name = name; // player name
     this.score = 0;
     this.lines = 0;
-    
+
     this.timer = null;
     this.timerCounter = 0;
     this.dropper = null;
-    this.dropInterval = 1000;
+    this.dropperInterval = variables.D_INTERVAL;
 
     this.piece = null; // current player tetromino
-    this.x = 0; // position x of piece
+    this.x = 0; // position x of piece | TODO: figure out the center of arena according to the piece
     this.y = 0; // position y of piece
 
-    this.arena = this.createMatrix(8, 20); // playground
+    this.arena = this.createMatrix(8, 20);
+  }
+
+  round () {
+    this.x = 0;
+    this.y = 0;
+    this.piece = this.getPiece("T"); // TODO: get random piece
+  }
+
+  drop () {
+    console.log("DROP PIECE");
+  }
+
+  move () {
+    console.log("MOVE PIECE");
+  }
+
+  getPiece (name) {
+    switch (name) {
+      case "T":
+        return [
+          [0, 0, 0],
+          [1, 1, 1],
+          [0, 1, 0],
+        ];
+      default:
+        break;
+    }
   }
 
   createMatrix (width, height) {
@@ -28,7 +59,7 @@ class Game {
   }
 
   startTimer () {
-    this.timer = setInterval(() => this.timerCounter++, constants.TIMER_INTERVAL);
+    this.timer = setInterval(() => this.timerCounter++, variables.T_INTERVAL);
   }
 
   stopTimer () {
@@ -36,10 +67,12 @@ class Game {
   }
 
   start () {
-    this.dropper = setInterval(() => this.render(), this.dropInterval);
+    this.startTimer();
+    this.dropper = setInterval(() => this.render(), this.dropperInterval);
   }
 
   stop () {
+    this.stopTimer();
     clearInterval(this.dropper);
   }
 
@@ -50,7 +83,7 @@ class Game {
   draw () {
     context.clearRect(0, 0, 240, 400);
 
-    // draw on canvas after render ...
+    // draw arena on canvas ...
 
     requestAnimationFrame(this.draw());
   }
