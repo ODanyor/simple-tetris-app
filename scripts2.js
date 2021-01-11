@@ -6,6 +6,44 @@ const variables = {
   D_INTERVAL: 1000, // initial drop interval
 };
 
+const tetrominos = [
+  [
+    [1, 1],
+    [1, 1],
+  ],
+  [
+    [0, 0, 0],
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+  [
+    [0, 0, 0],
+    [0, 1, 1],
+    [1, 1, 0],
+  ],
+  [
+    [0, 0, 0],
+    [1, 1, 0],
+    [0, 1, 1],
+  ],
+  [
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 1, 1],
+  ],
+  [
+    [0, 1, 0],
+    [0, 1, 0],
+    [1, 1, 0],
+  ],
+  [
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+  ],
+];
+
 class Game {
   constructor (name) {
     this.name = name; // player name
@@ -17,35 +55,95 @@ class Game {
     this.dropper = null;
     this.dropperInterval = variables.D_INTERVAL;
 
-    this.piece = null; // current player tetromino
+    this.tetromino = null; // current player tetromino
     this.x = 0; // position x of piece | TODO: figure out the center of arena according to the piece
     this.y = 0; // position y of piece
 
     this.arena = this.createMatrix(8, 20);
+
+    this.preload();
   }
 
-  round () {
-    this.x = 0;
-    this.y = 0;
-    this.piece = this.getPiece("T"); // TODO: get random piece
+  merge () {
+    console.log("MERGE: piece to arena");
+  }
+
+  collide () {
+    console.log("COLLIDE: true | false");
   }
 
   drop () {
-    console.log("DROP PIECE");
+    this.y++; // TODO: collide check
+    if (this.collide()) {
+      this.y--;
+      this.merge();
+      this.round();
+    }
   }
 
-  move () {
-    console.log("MOVE PIECE");
+  move (direction) {
+    this.x += direction; // TODO: collide check
+    if (this.collide()) this.x -= direction;
   }
 
-  getPiece (name) {
-    switch (name) {
+  rotate () {
+    console.log("ROTATE"); // TODO: collide check
+  }
+
+  controller () {
+    window.addEventListener("keydown", ({ keyCode }) => {
+      switch (keyCode) {
+        case 13: // ENTER
+          console.log("ENTER");
+          break;
+        case 27: // ESC
+          console.log("ESC");
+          break;
+        case 37: // ARROW LEFT
+          this.move(-1);
+          break;
+        case 39: // ARROW RIGHT
+          this.move(1);
+          break;
+        case 38: // ARROW UP
+          this.rotate();
+          break;
+        case 40: // ARROW DOWN
+          this.stopDropper();
+          this.drop();
+          this.startDropper();
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  round () {
+    const tetrominoKeys = "OTSZLJI";
+    const randomTetrominoKey = Math.random() * tetrominoKeys.length | 0;
+
+    this.x = 0;
+    this.y = 0;
+    this.tetromino = this.getTetromino(randomTetrominoKey);
+  }
+
+  getTetromino (tetriminoKey) {
+    switch (tetriminoKey) {
+      case "O":
+        return tetrominos[0];
       case "T":
-        return [
-          [0, 0, 0],
-          [1, 1, 1],
-          [0, 1, 0],
-        ];
+        return tetrominos[1];
+      case "S":
+        return tetrominos[2];
+      case "Z":
+        return tetrominos[3];
+      case "L":
+        return tetrominos[4];
+      case "J":
+        return tetrominos[5];
+      case "I":
+        return tetrominos[6];
       default:
         break;
     }
@@ -66,16 +164,25 @@ class Game {
     clearInterval(this.timer);
   }
 
+  startDropper () {
+    this.dropper = setInterval(() => this.render(), this.dropperInterval);
+  }
+
+  stopDropper () {
+    clearInterval(this.dropper);
+  }
+
   start () {
     this.startTimer();
-    this.dropper = setInterval(() => this.render(), this.dropperInterval);
+    this.startDropper();
   }
 
   stop () {
     this.stopTimer();
-    clearInterval(this.dropper);
+    this.stopDropper();
   }
 
+  // fired by dropper interval function
   render () {
     console.log("RENDER");
   }
@@ -86,6 +193,10 @@ class Game {
     // draw arena on canvas ...
 
     requestAnimationFrame(this.draw());
+  }
+
+  preload () {
+    this.controller();
   }
 }
 
