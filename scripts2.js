@@ -64,30 +64,56 @@ class Game {
     this.preload();
   }
 
-  merge () {
-    console.log("MERGE: piece to arena");
+  // @UNIVERSAL
+  merge (arena, tetromino) {
+    tetromino.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) arena[y + this.y][x + this.x] = value;
+      });
+    });
   }
 
-  collide () {
-    console.log("COLLIDE: true | false");
+  // @UNIVERSAL
+  collide (arena, tetromino) {
+    for (let y = 0; y < tetromino.length; y++) {
+      for (let x = 0; x < tetromino[y].length; x++) {
+        if (tetromino[y][x] && arena[y + this.y] && arena[x + this.x]) return true;
+      }
+    }
   }
 
   drop () {
-    this.y++; // TODO: collide check
-    if (this.collide()) {
+    this.y++;
+    if (this.collide(this.arena, this.tetromino)) {
       this.y--;
-      this.merge();
+      this.merge(this.arena, this.tetromino);
       this.round();
     }
   }
 
   move (direction) {
-    this.x += direction; // TODO: collide check
-    if (this.collide()) this.x -= direction;
+    this.x += direction;
+    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
   }
 
-  rotate () {
-    console.log("ROTATE"); // TODO: collide check
+  // @UNIVERSAL
+  rotate (tetromino) {
+    const previousTetromino = tetromino;
+    const rotatedTetromino = [];
+
+    for (let y = 0; y < this.tetromino.length; y++) {
+      const rotatedRow = [];
+
+      for (let x = 0; x < this.tetromino[y].length; x++) {
+        rotatedRow.push(this.tetromino[y][x]);
+      }
+
+      rotatedTetromino.push(rotatedRow);
+    }
+
+    if (this.collide(this.arena, rotatedTetromino)) return previousTetromino;
+
+    return rotatedTetromino;
   }
 
   controller () {
@@ -106,7 +132,7 @@ class Game {
           this.move(1);
           break;
         case 38: // ARROW UP
-          this.rotate();
+          this.rotate(this.tetromino);
           break;
         case 40: // ARROW DOWN
           this.stopDropper();
@@ -149,6 +175,7 @@ class Game {
     }
   }
 
+  // @UNIVERSAL
   createMatrix (width, height) {
     const matrix = [];
     while (height--) matrix.push(new Array(width).fill(0));
