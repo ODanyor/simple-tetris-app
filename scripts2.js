@@ -2,8 +2,8 @@ const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
 const configs = {
-  H_ARENA: 8, // arena width
-  W_ARENA: 20, // arena height
+  W_ARENA: 8, // arena width
+  H_ARENA: 20, // arena height
 };
 
 const variables = {
@@ -80,7 +80,7 @@ class Game {
   merge (arena, matrix) {
     matrix.forEach((row, y) => {
       row.forEach((value, x) => {
-        if (value) arena[y + this.y][x + this.x] = value;
+        if (value) arena[y + this.y][x + this.x] = value; // TODO: fix bug value of 'undefined'
       });
     });
   }
@@ -88,9 +88,11 @@ class Game {
   collide (arena, matrix) {
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
-        if (matrix[y][x] && arena[y + this.y] && arena[x + this.x]) return true;
+        if (matrix[y][x] && arena[y + this.y] && arena[x + this.x]) return false;
       }
     }
+
+    return true;
   }
 
   rotate (matrix) {
@@ -109,6 +111,21 @@ class Game {
   }
 
   // =======@GAMEPLAY@=======
+  drop () {
+    this.y++;
+    if (this.collide(this.arena, this.tetromino)) {
+      this.y--;
+      this.merge(this.arena, this.tetromino);
+      this.round();
+    }
+  }
+
+  move (direction) {
+    this.x += direction;
+    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
+  }
+
+  // =======@GAME CONTROLLERS@=======
   setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => {
       switch (keyCode) {
@@ -138,23 +155,8 @@ class Game {
     });
   }
 
-  drop () {
-    this.y++;
-    if (this.collide(this.arena, this.tetromino)) {
-      this.y--;
-      this.merge(this.arena, this.tetromino);
-      this.round();
-    }
-  }
-
-  move (direction) {
-    this.x += direction;
-    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
-  }
-
-  // =======@GAME CONTROLLERS@=======
-  getTetromino (tetriminoKey) {
-    switch (tetriminoKey) {
+  getTetromino (tetrominoKey) {
+    switch (tetrominoKey) {
       case "O":
         return tetrominos[0];
       case "T":
@@ -176,11 +178,11 @@ class Game {
 
   round () {
     const tetrominoKeys = "OTSZLJI";
-    const randomTetrominoKey = Math.random() * tetrominoKeys.length | 0;
+    const randomKeyIndex = Math.random() * tetrominoKeys.length | 0;
 
     this.x = 0;
     this.y = 0;
-    this.tetromino = this.getTetromino(randomTetrominoKey);
+    this.tetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
   }
 
   startTimer () {
@@ -211,7 +213,11 @@ class Game {
 
   // fired by dropper interval function
   render () {
-    console.log("RENDER");
+    this.drop();
+    if (this.collide(this.arena, this.tetromino)) {
+      this.y--;
+      this.merge(this.arena, this.tetromino);
+    }
   }
 
   draw () {
@@ -224,11 +230,13 @@ class Game {
 
   preload () {
     this.setupKeyboard();
+    this.round();
   }
 }
 
 function main () {
   const game = new Game("player1");
+  game.start();
   console.log("GAME IS LOADED", game);
 }
 
