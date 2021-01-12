@@ -1,6 +1,11 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
+const configs = {
+  H_ARENA: 8, // arena width
+  W_ARENA: 20, // arena height
+};
+
 const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
@@ -59,55 +64,42 @@ class Game {
     this.x = 0; // position x of piece | TODO: figure out the center of arena according to the piece
     this.y = 0; // position y of piece
 
-    this.arena = this.createMatrix(8, 20);
+    this.arena = this.createMatrix(configs.W_ARENA, configs.H_ARENA);
 
     this.preload();
   }
 
-  // @UNIVERSAL
-  merge (arena, tetromino) {
-    tetromino.forEach((row, y) => {
+  // =======@UNIVERSAL@=======
+  createMatrix (width, height) {
+    const matrix = [];
+    while (height--) matrix.push(new Array(width).fill(0));
+
+    return matrix;
+  }
+
+  merge (arena, matrix) {
+    matrix.forEach((row, y) => {
       row.forEach((value, x) => {
         if (value) arena[y + this.y][x + this.x] = value;
       });
     });
   }
 
-  // @UNIVERSAL
-  collide (arena, tetromino) {
-    for (let y = 0; y < tetromino.length; y++) {
-      for (let x = 0; x < tetromino[y].length; x++) {
-        if (tetromino[y][x] && arena[y + this.y] && arena[x + this.x]) return true;
+  collide (arena, matrix) {
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        if (matrix[y][x] && arena[y + this.y] && arena[x + this.x]) return true;
       }
     }
   }
 
-  drop () {
-    this.y++;
-    if (this.collide(this.arena, this.tetromino)) {
-      this.y--;
-      this.merge(this.arena, this.tetromino);
-      this.round();
-    }
-  }
-
-  move (direction) {
-    this.x += direction;
-    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
-  }
-
-  // @UNIVERSAL
-  rotate (tetromino) {
-    const previousTetromino = tetromino;
+  rotate (matrix) {
+    const previousTetromino = matrix;
     const rotatedTetromino = [];
 
-    for (let y = 0; y < this.tetromino.length; y++) {
+    for (let y = 0; y < matrix.length; y++) {
       const rotatedRow = [];
-
-      for (let x = 0; x < this.tetromino[y].length; x++) {
-        rotatedRow.push(this.tetromino[y][x]);
-      }
-
+      for (let x = 0; x < matrix[y].length; x++) rotatedRow.push(matrix[y][x]);
       rotatedTetromino.push(rotatedRow);
     }
 
@@ -116,7 +108,8 @@ class Game {
     return rotatedTetromino;
   }
 
-  controller () {
+  // =======@GAMEPLAY@=======
+  setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => {
       switch (keyCode) {
         case 13: // ENTER
@@ -145,15 +138,21 @@ class Game {
     });
   }
 
-  round () {
-    const tetrominoKeys = "OTSZLJI";
-    const randomTetrominoKey = Math.random() * tetrominoKeys.length | 0;
-
-    this.x = 0;
-    this.y = 0;
-    this.tetromino = this.getTetromino(randomTetrominoKey);
+  drop () {
+    this.y++;
+    if (this.collide(this.arena, this.tetromino)) {
+      this.y--;
+      this.merge(this.arena, this.tetromino);
+      this.round();
+    }
   }
 
+  move (direction) {
+    this.x += direction;
+    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
+  }
+
+  // =======@GAME CONTROLLERS@=======
   getTetromino (tetriminoKey) {
     switch (tetriminoKey) {
       case "O":
@@ -175,12 +174,13 @@ class Game {
     }
   }
 
-  // @UNIVERSAL
-  createMatrix (width, height) {
-    const matrix = [];
-    while (height--) matrix.push(new Array(width).fill(0));
+  round () {
+    const tetrominoKeys = "OTSZLJI";
+    const randomTetrominoKey = Math.random() * tetrominoKeys.length | 0;
 
-    return matrix;
+    this.x = 0;
+    this.y = 0;
+    this.tetromino = this.getTetromino(randomTetrominoKey);
   }
 
   startTimer () {
@@ -223,7 +223,7 @@ class Game {
   }
 
   preload () {
-    this.controller();
+    this.setupKeyboard();
   }
 }
 
