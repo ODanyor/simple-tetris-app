@@ -125,6 +125,20 @@ class Game {
     if (this.collide(this.arena, this.tetromino)) this.x -= direction;
   }
 
+  jump () {
+    let steps = 1;
+    let direction = 1;
+
+    while (
+      this.collide(this.arena, this.tetromino) &&
+      steps <= this.tetromino.length / 2 | 0
+    ) {
+      this.x += steps * direction;
+      this.steps++;
+      direction *= -1;
+    }
+  }
+
   // =======@GAME CONTROLLERS@=======
   setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => {
