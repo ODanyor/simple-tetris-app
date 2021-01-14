@@ -72,33 +72,38 @@ class Game {
   }
 
   // =======@UNIVERSAL@=======
-  createMatrix (width, height) {
+  createMatrix (width, height) { // DESC: creates height number of array with width number of array
     const matrix = [];
     while (height--) matrix.push(new Array(width).fill(0));
 
     return matrix;
   }
 
-  merge (arena, matrix) {
+  merge (arena, matrix) { // DESC: merges matrix array into arena array
     matrix.forEach((row, y) => {
       row.forEach((value, x) => {
-        console.log(arena[y + this.y]);
-        if (value) arena[y + this.y][x + this.x] = value; // TODO: fix bug value of 'undefined'
+        if (value) arena[y + this.y][x + this.x] = value;
       });
     });
   }
 
-  collide (arena, matrix) {
+  collide (arena, matrix) { // DESC: check for matrix array existance in arena array
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
-        if (matrix[y][x] && arena[y + this.y] && arena[x + this.x]) return false;
+        if (
+          (
+            matrix[y][x] &&
+            arena[this.y + y] &&
+            arena[this.y + y][this.x + x]
+          ) !== 0
+        ) return true;
       }
     }
 
-    return true;
+    return false;
   }
 
-  rotate (matrix) {
+  rotate (matrix) { // DESC: rotate matrix array
     const previousTetromino = matrix;
     const rotatedTetromino = [];
 
@@ -198,6 +203,10 @@ class Game {
     }
   }
 
+  solidLines () {} // TODO: check for solid lines
+
+  removeLines () {} // TODO: if solidLines count score and remove solidLines
+
   round () {
     const tetrominoKeys = variables.TETROMINOS;
     const randomKeyIndex = Math.random() * tetrominoKeys.length | 0;
@@ -205,6 +214,8 @@ class Game {
     this.x = 0; // TODO: figure out the center of arena according to the piece
     this.y = 0;
     this.tetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
+
+    if (this.collide(this.arena, this.tetromino)) this.gameOver();
   }
 
   startTimer () {
@@ -233,13 +244,15 @@ class Game {
     this.stopDropper();
   }
 
+  gameOver () {
+    console.log("Game over!");
+    this.stop();
+  }
+
   // fired by dropper interval function
   render () {
+    console.log("RENDER", this);
     this.drop();
-    if (this.collide(this.arena, this.tetromino)) {
-      this.y--;
-      this.merge(this.arena, this.tetromino);
-    }
   }
 
   draw () {
