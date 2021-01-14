@@ -9,6 +9,8 @@ const configs = {
 const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
+
+  TETROMINOS: "OTSZLJI", // tetromino keys
 };
 
 const tetrominos = [
@@ -61,7 +63,7 @@ class Game {
     this.dropperInterval = variables.D_INTERVAL;
 
     this.tetromino = null; // current player tetromino
-    this.x = 0; // position x of piece | TODO: figure out the center of arena according to the piece
+    this.x = 0; // position x of piece
     this.y = 0; // position y of piece
 
     this.arena = this.createMatrix(configs.W_ARENA, configs.H_ARENA);
@@ -80,6 +82,7 @@ class Game {
   merge (arena, matrix) {
     matrix.forEach((row, y) => {
       row.forEach((value, x) => {
+        console.log(arena[y + this.y]);
         if (value) arena[y + this.y][x + this.x] = value; // TODO: fix bug value of 'undefined'
       });
     });
@@ -101,7 +104,7 @@ class Game {
 
     for (let y = 0; y < matrix.length; y++) {
       const rotatedRow = [];
-      for (let x = 0; x < matrix[y].length; x++) rotatedRow.push(matrix[y][x]);
+      for (let x = 0; x < matrix[y].length; x++) rotatedRow.push(matrix[y][x]); // TODO: push rotated row
       rotatedTetromino.push(rotatedRow);
     }
 
@@ -125,17 +128,22 @@ class Game {
     if (this.collide(this.arena, this.tetromino)) this.x -= direction;
   }
 
-  jump () {
-    let steps = 1;
-    let direction = 1;
+  playerRotate () {
+    const previousX = this.x; // previous x tetromino position
+    const previousT = this.tetromino; // previous tetromino rotation
 
-    while (
-      this.collide(this.arena, this.tetromino) &&
-      steps <= this.tetromino.length / 2 | 0
-    ) {
-      this.x += steps * direction;
-      this.steps++;
-      direction *= -1;
+    let offset = 1;
+    this.tetromino = this.rotate(this.tetromino);
+
+    while (this.collide(this.arena, this.tetromino)) {
+      this.x += offset;
+      offset = -(offset + (offset > 0 ? 1 : -1));
+
+      if (offset > this.tetromino.length) {
+        this.x = previousX;
+        this.tetromino = previousT;
+        break;
+      }
     }
   }
 
@@ -144,10 +152,10 @@ class Game {
     window.addEventListener("keydown", ({ keyCode }) => {
       switch (keyCode) {
         case 13: // ENTER
-          console.log("ENTER");
+          this.start();
           break;
         case 27: // ESC
-          console.log("ESC");
+          this.stop();
           break;
         case 37: // ARROW LEFT
           this.move(-1);
@@ -156,7 +164,7 @@ class Game {
           this.move(1);
           break;
         case 38: // ARROW UP
-          this.rotate(this.tetromino);
+          this.playerRotate();
           break;
         case 40: // ARROW DOWN
           this.stopDropper();
@@ -191,10 +199,10 @@ class Game {
   }
 
   round () {
-    const tetrominoKeys = "OTSZLJI";
+    const tetrominoKeys = variables.TETROMINOS;
     const randomKeyIndex = Math.random() * tetrominoKeys.length | 0;
 
-    this.x = 0;
+    this.x = 0; // TODO: figure out the center of arena according to the piece
     this.y = 0;
     this.tetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
   }
@@ -239,7 +247,7 @@ class Game {
 
     // draw arena on canvas ...
 
-    requestAnimationFrame(this.draw());
+    requestAnimationFrame(this.draw);
   }
 
   preload () {
