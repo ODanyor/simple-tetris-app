@@ -1,8 +1,9 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
+context.scale(20, 20);
 
 const configs = {
-  W_ARENA: 8, // arena width
+  W_ARENA: 12, // arena width
   H_ARENA: 20, // arena height
 };
 
@@ -85,9 +86,11 @@ class Game {
         if (value) arena[y + this.y][x + this.x] = value;
       });
     });
+
+    this.handleLines();
   }
 
-  collide (arena, matrix) { // DESC: check for matrix array existance in arena array
+  collide (arena, matrix) { // DESC: checks for matrix array existance in arena array
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
         if (
@@ -103,23 +106,20 @@ class Game {
     return false;
   }
 
-  rotate (matrix) { // DESC: rotate matrix array
-    const previousTetromino = matrix;
+  rotate (matrix) { // DESC: rotates matrix array by swapping it's rows
     const rotatedTetromino = [];
 
     for (let y = 0; y < matrix.length; y++) {
       const rotatedRow = [];
-      for (let x = 0; x < matrix[y].length; x++) rotatedRow.push(matrix[y][x]); // TODO: push rotated row
+      for (let x = 1; x <= matrix[y].length; x++) rotatedRow.push(matrix[matrix.length - x][y]); // TODO: push rotated row
       rotatedTetromino.push(rotatedRow);
     }
-
-    if (this.collide(this.arena, rotatedTetromino)) return previousTetromino;
 
     return rotatedTetromino;
   }
 
   // =======@GAMEPLAY@=======
-  drop () {
+  dropPlayer () {
     this.y++;
     if (this.collide(this.arena, this.tetromino)) {
       this.y--;
@@ -128,14 +128,14 @@ class Game {
     }
   }
 
-  move (direction) {
+  movePlayer (direction) {
     this.x += direction;
     if (this.collide(this.arena, this.tetromino)) this.x -= direction;
   }
 
-  playerRotate () {
+  rotatePlayer () {
     const previousX = this.x; // previous x tetromino position
-    const previousT = this.tetromino; // previous tetromino rotation
+    const previousT = this.tetromino.slice(); // previous tetromino rotation
 
     let offset = 1;
     this.tetromino = this.rotate(this.tetromino);
@@ -163,17 +163,17 @@ class Game {
           this.stop();
           break;
         case 37: // ARROW LEFT
-          this.move(-1);
+          this.movePlayer(-1);
           break;
         case 39: // ARROW RIGHT
-          this.move(1);
+          this.movePlayer(1);
           break;
         case 38: // ARROW UP
-          this.playerRotate();
+          this.rotatePlayer();
           break;
         case 40: // ARROW DOWN
           this.stopDropper();
-          this.drop();
+          this.dropPlayer();
           this.startDropper();
           break;
         default:
@@ -203,17 +203,17 @@ class Game {
     }
   }
 
-  solidLines () {} // TODO: check for solid lines
-
-  removeLines () {} // TODO: if solidLines count score and remove solidLines
+  sweepLines () {} // TODO: finish the function
 
   round () {
     const tetrominoKeys = variables.TETROMINOS;
     const randomKeyIndex = Math.random() * tetrominoKeys.length | 0;
+    const randomTetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
+    const widthCenter = (configs.W_ARENA - randomTetromino.length) / 2 | 0;
 
-    this.x = 0; // TODO: figure out the center of arena according to the piece
-    this.y = 0;
-    this.tetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
+    this.x = widthCenter;
+    this.y = 0; // TODO: figure out the toppest y position
+    this.tetromino = randomTetromino;
 
     if (this.collide(this.arena, this.tetromino)) this.gameOver();
   }
@@ -245,22 +245,37 @@ class Game {
   }
 
   gameOver () {
-    console.log("Game over!");
+    console.log("GAME IS OVER: ", { time: this.timerCounter, score: this.score });
     this.stop();
   }
 
   // fired by dropper interval function
   render () {
-    console.log("RENDER", this);
-    this.drop();
+    // console.log("RENDER", this);
+    this.dropPlayer();
+  }
+
+  drawMatrix (matrix, position) {
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) {
+          context.beginPath();
+          context.fillStyle = "gray";
+          context.fillRect(position.x + x, position.y + y, 1, 1);
+        }
+      })
+    })
   }
 
   draw () {
-    context.clearRect(0, 0, 240, 400);
+    // draw canvas
+    context.beginPath();
+    context.fillStyle = "#305b6b";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     // draw arena on canvas ...
-
-    requestAnimationFrame(this.draw);
+    this.drawMatrix(this.arena, { x: 0, y: 0 });
+    this.drawMatrix(this.tetromino, { x: this.x, y: this.y });
   }
 
   preload () {
@@ -269,10 +284,17 @@ class Game {
   }
 }
 
+// TODO: create Stream class
+function stream (game) { // DESC: will demonstrate game proccess on canvas
+  context.clearRect(0, 0, 240, 400);
+  game.draw();
+  requestAnimationFrame(() => stream(game));
+}
+
 function main () {
-  const game = new Game("player1");
+  const game = new Game("player");
   game.start();
-  console.log("GAME IS LOADED", game);
+  stream(game);
 }
 
 window.addEventListener("load", main);
