@@ -87,7 +87,7 @@ class Game {
       });
     });
 
-    this.handleLines();
+    this.sweepLines();
   }
 
   collide (arena, matrix) { // DESC: checks for matrix array existance in arena array
