@@ -111,7 +111,7 @@ class Game {
 
     for (let y = 0; y < matrix.length; y++) {
       const rotatedRow = [];
-      for (let x = 1; x <= matrix[y].length; x++) rotatedRow.push(matrix[matrix.length - x][y]); // TODO: push rotated row
+      for (let x = matrix[y].length - 1; x >= 0; x--) rotatedRow.push(matrix[x][y]);
       rotatedTetromino.push(rotatedRow);
     }
 
@@ -137,7 +137,7 @@ class Game {
     const previousX = this.x; // previous x tetromino position
     const previousT = this.tetromino.slice(); // previous tetromino rotation
 
-    let offset = 1;
+    let offset = -1;
     this.tetromino = this.rotate(this.tetromino);
 
     while (this.collide(this.arena, this.tetromino)) {
@@ -203,7 +203,17 @@ class Game {
     }
   }
 
-  sweepLines () {} // TODO: finish the function
+  sweepLines () {
+    for (let y = this.arena.length - 1; y >= 0; y--) {
+      const isSolidLine = this.arena[y].every(value => value);
+
+      if (!isSolidLine) continue;
+
+      const solidLine = this.arena.splice(y, 1)[0].fill(0);
+      this.arena.unshift(solidLine);
+      y++;
+    }
+  }
 
   round () {
     const tetrominoKeys = variables.TETROMINOS;
@@ -251,7 +261,6 @@ class Game {
 
   // fired by dropper interval function
   render () {
-    // console.log("RENDER", this);
     this.dropPlayer();
   }
 
@@ -260,11 +269,11 @@ class Game {
       row.forEach((value, x) => {
         if (value) {
           context.beginPath();
-          context.fillStyle = "gray";
+          context.fillStyle = "gray"; // TODO: dynamic color painting
           context.fillRect(position.x + x, position.y + y, 1, 1);
         }
-      })
-    })
+      });
+    });
   }
 
   draw () {
@@ -273,7 +282,6 @@ class Game {
     context.fillStyle = "#305b6b";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    // draw arena on canvas ...
     this.drawMatrix(this.arena, { x: 0, y: 0 });
     this.drawMatrix(this.tetromino, { x: this.x, y: this.y });
   }
