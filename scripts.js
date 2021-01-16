@@ -1,8 +1,8 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
-context.scale(20, 20);
 
 const configs = {
+  S_ARENA: 20, // arena scale
   W_ARENA: 12, // arena width
   H_ARENA: 20, // arena height
 };
@@ -14,6 +14,9 @@ const variables = {
   TETROMINOS: "OTSZLJI", // tetromino keys
 };
 
+const scaledArenaWidth = configs.W_ARENA * configs.S_ARENA;
+const scaledArenaHeight = configs.H_ARENA * configs.S_ARENA;
+
 const tetrominos = [
   [
     [1, 1],
@@ -21,35 +24,46 @@ const tetrominos = [
   ],
   [
     [0, 0, 0],
-    [1, 1, 1],
-    [0, 1, 0],
+    [2, 2, 2],
+    [0, 2, 0],
   ],
   [
     [0, 0, 0],
-    [0, 1, 1],
-    [1, 1, 0],
+    [0, 3, 3],
+    [3, 3, 0],
   ],
   [
     [0, 0, 0],
-    [1, 1, 0],
-    [0, 1, 1],
+    [4, 4, 0],
+    [0, 4, 4],
   ],
   [
-    [0, 1, 0],
-    [0, 1, 0],
-    [0, 1, 1],
+    [0, 5, 0],
+    [0, 5, 0],
+    [0, 5, 5],
   ],
   [
-    [0, 1, 0],
-    [0, 1, 0],
-    [1, 1, 0],
+    [0, 6, 0],
+    [0, 6, 0],
+    [6, 6, 0],
   ],
   [
-    [0, 1, 0, 0],
-    [0, 1, 0, 0],
-    [0, 1, 0, 0],
-    [0, 1, 0, 0],
+    [0, 7, 0, 0],
+    [0, 7, 0, 0],
+    [0, 7, 0, 0],
+    [0, 7, 0, 0],
   ],
+];
+
+const colors = [
+  "#003747", // background
+  "#a83232", // red
+  "#a83232", // red-brown
+  "#a87132", // brown
+  "#4ca832", // green
+  "#32a8a2", // green-blue
+  "#325da8", // blue
+  "#7532a8", // purple
 ];
 
 class GameTetris {
@@ -269,7 +283,7 @@ class GameTetris {
       row.forEach((value, x) => {
         if (value) {
           context.beginPath();
-          context.fillStyle = "gray"; // TODO: dynamic color painting
+          context.fillStyle = colors[value];
           context.fillRect(position.x + x, position.y + y, 1, 1);
         }
       });
@@ -279,14 +293,21 @@ class GameTetris {
   draw () {
     // draw canvas
     context.beginPath();
-    context.fillStyle = "#305b6b";
+    context.fillStyle = colors[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     this.drawMatrix(this.arena, { x: 0, y: 0 });
     this.drawMatrix(this.tetromino, { x: this.x, y: this.y });
   }
 
+  setupCanvas () {
+    canvas.width = scaledArenaWidth;
+    canvas.height = scaledArenaHeight;
+    context.scale(configs.S_ARENA, configs.S_ARENA);
+  }
+
   preload () {
+    this.setupCanvas();
     this.setupKeyboard();
     this.round();
   }
@@ -294,7 +315,7 @@ class GameTetris {
 
 // TODO: create Stream class
 function stream (game) { // DESC: will demonstrate game proccess on canvas
-  context.clearRect(0, 0, 240, 400);
+  context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
   game.draw();
   requestAnimationFrame(() => stream(game));
 }
