@@ -69,7 +69,7 @@ const colors = [
   "#7532a8", // purple
 ];
 
-class GameTetris {
+class Game {
   constructor (name) {
     this.name = name; // player name
     this.score = 0;
@@ -356,7 +356,7 @@ function stream (game) { // DESC: will demonstrate game proccess on the canvas
 }
 
 function main () {
-  const game = new GameTetris("player");
+  const game = new Game("player");
   game.start();
   stream(game);
 }
