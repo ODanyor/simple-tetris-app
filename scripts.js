@@ -300,7 +300,7 @@ function stream (game) { // DESC: will demonstrate game proccess on canvas
 }
 
 function main () {
-  const game = new TetrisGame("player");
+  const game = new GameTetris("player");
   game.start();
   stream(game);
 }
