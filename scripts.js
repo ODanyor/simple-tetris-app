@@ -172,7 +172,6 @@ class GameTetris {
   // =======@GAME CONTROLLERS@=======
   setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => {
-      console.log("KEY CODE: ", keyCode);
       switch (keyCode) {
         case 13: // ENTER
           this.start();
@@ -312,7 +311,7 @@ class GameTetris {
   }
 
   draw () {
-    // draw canvas
+    // DESC: paints the canvas
     context.beginPath();
     context.fillStyle = colors[0];
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -337,6 +336,7 @@ class GameTetris {
 function timeConverter (seconds) {
   let min = seconds / 60 | 0;
   let sec = seconds % 60;
+
   if (min < 10) min = "0" + min;
   if (sec < 10) sec = "0" + sec;
 
@@ -346,7 +346,7 @@ function timeConverter (seconds) {
   return min.concat(":", sec);
 }
 
-function stream (game) { // DESC: will demonstrate game proccess on canvas
+function stream (game) { // DESC: will demonstrate game proccess on the canvas
   context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
 
   game.draw();
