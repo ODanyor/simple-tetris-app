@@ -57,8 +57,8 @@ const tetrominos = [
 
 const colors = [
   "#003747", // background
-  "#a83232", // red
-  "#a83232", // red-brown
+  "#ba3d3d", // red
+  "#c0d16b", // yellow
   "#a87132", // brown
   "#4ca832", // green
   "#32a8a2", // green-blue

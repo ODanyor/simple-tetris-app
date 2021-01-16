@@ -5,7 +5,7 @@
 }
 
 body {
-  background-color: darkcyan;
+  background-color: rgb(35, 35, 35);
   display: flex;
   justify-content: center;
 }
