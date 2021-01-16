@@ -1,210 +1,308 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 context.scale(20, 20);
-// const posM = 5540
 
-function getPiece (type) {
-  switch (type) {
-    case "T":
-      return [
-        [0, 0, 0],
-        [1, 1, 1],
-        [0, 1, 0],
-      ];
-    case "S":
-      return [
-        [0, 0, 0],
-        [0, 1, 1],
-        [1, 1, 0],
-      ];
-    case "Z":
-      return [
-        [0, 0, 0],
-        [1, 1, 0],
-        [0, 1, 1],
-      ];
-    case "L":
-      return [
-        [0, 1, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-      ];
-    case "J":
-      return [
-        [0, 1, 0],
-        [0, 1, 0],
-        [1, 1, 0],
-      ];
-    case "I":
-      return [
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-      ];
-    case "O":
-      return [
-        [1, 1],
-        [1, 1],
-      ];
-    default:
-      break;
-  }
-}
-
-function collide (arena, player) {
-  const [matrix, position] = [player.matrix, player.pos];
-
-  for (let y = 0; y < matrix.length; y++) {
-    for (let x = 0; x < matrix[y].length; x++) {
-      if (
-        (
-          matrix[y][x] &&
-          arena[y + position.y] &&
-          arena[y + position.y][x + position.x]
-        ) !== 0
-      ) return true;
-    }
-  }
-
-  return false;
-}
-
-function rotate (matrix) {
-  const rotatedMatrix = [];
-
-  for (let y = 0; y < matrix.length; y++) {
-    const rotatedRow = [];
-
-    for (let x = 0; x < matrix[y].length; x++) {
-      rotatedRow.push(matrix[matrix.length-1 - x][y]);
-    }
-
-    rotatedMatrix.push(rotatedRow);
-  }
-
-  return rotatedMatrix;
-}
-
-function createMatrix (width, height) {
-  const matrix = [];
-  while (height--) matrix.push(new Array(width).fill(0));
-
-  return matrix;
-}
-
-function merge (arena, player) {
-  player.matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value) arena[y + player.pos.y][x + player.pos.x] = value;
-    });
-  });
-}
-
-// draw figures on canvas
-function drawMatrix (matrix, offset) {
-  matrix.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value) {
-        context.beginPath();
-        context.fillStyle = "#3f6b30";
-        context.fillRect(x + offset.x, y + offset.y, 1, 1);
-      }
-    });
-  });
-}
-
-const arena = createMatrix(12, 20);
-
-const player = {
-  pos: { x: Math.floor(arena[0].length / 2), y: -1 },
-  matrix: getPiece("T"),
+const configs = {
+  W_ARENA: 12, // arena width
+  H_ARENA: 20, // arena height
 };
 
-function draw () {
-  context.beginPath();
-  context.fillStyle = "#305b6b";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+const variables = {
+  T_INTERVAL: 1000, // timer interval
+  D_INTERVAL: 1000, // initial drop interval
 
-  drawMatrix(arena, { x: 0, y: 0 });
-  drawMatrix(player.matrix, player.pos);
-}
+  TETROMINOS: "OTSZLJI", // tetromino keys
+};
 
-let lastTime = 0;
-let dropCounter = 0;
-let dropInterval = 1000;
+const tetrominos = [
+  [
+    [1, 1],
+    [1, 1],
+  ],
+  [
+    [0, 0, 0],
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+  [
+    [0, 0, 0],
+    [0, 1, 1],
+    [1, 1, 0],
+  ],
+  [
+    [0, 0, 0],
+    [1, 1, 0],
+    [0, 1, 1],
+  ],
+  [
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 1, 1],
+  ],
+  [
+    [0, 1, 0],
+    [0, 1, 0],
+    [1, 1, 0],
+  ],
+  [
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 0, 0],
+  ],
+];
 
-function playerDrop () {
-  player.pos.y++;
+class GameTetris {
+  constructor (name) {
+    this.name = name; // player name
+    this.score = 0;
+    this.lines = 0;
 
-  if (collide(arena, player)) {
-    player.pos.y--;
-    merge(arena, player);
-    playerReset();
+    this.timer = null;
+    this.timerCounter = 0;
+    this.dropper = null;
+    this.dropperInterval = variables.D_INTERVAL;
+
+    this.tetromino = null; // current player tetromino
+    this.x = 0; // position x of piece
+    this.y = 0; // position y of piece
+
+    this.arena = this.createMatrix(configs.W_ARENA, configs.H_ARENA);
+
+    this.preload();
   }
 
-  dropCounter = 0;
-}
+  // =======@UNIVERSAL@=======
+  createMatrix (width, height) { // DESC: creates height number of array with width number of array
+    const matrix = [];
+    while (height--) matrix.push(new Array(width).fill(0));
 
-function playerMove (direction) {
-  player.pos.x += direction;
-  if (collide(arena, player)) player.pos.x -= direction;
-}
+    return matrix;
+  }
 
-function playerRotate () {
-  const pos = player.pos.x;
-  let offset = 1;
-  player.matrix = rotate(player.matrix);
-  while (collide(arena, player)) {
-    player.pos.x += offset;
-    offset = -(offset + (offset > 0 ? 1 : -1));
-    if (offset > player.matrix[0].length) {
-      rotate(player.matrix);
-      player.pos.x = pos;
-      return;
+  merge (arena, matrix) { // DESC: merges matrix array into arena array
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) arena[y + this.y][x + this.x] = value;
+      });
+    });
+
+    this.sweepLines();
+  }
+
+  collide (arena, matrix) { // DESC: checks for matrix array existance in arena array
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        if (
+          (
+            matrix[y][x] &&
+            arena[this.y + y] &&
+            arena[this.y + y][this.x + x]
+          ) !== 0
+        ) return true;
+      }
+    }
+
+    return false;
+  }
+
+  rotate (matrix) { // DESC: rotates matrix array by swapping it's rows
+    const rotatedTetromino = [];
+
+    for (let y = 0; y < matrix.length; y++) {
+      const rotatedRow = [];
+      for (let x = matrix[y].length - 1; x >= 0; x--) rotatedRow.push(matrix[x][y]);
+      rotatedTetromino.push(rotatedRow);
+    }
+
+    return rotatedTetromino;
+  }
+
+  // =======@GAMEPLAY@=======
+  dropPlayer () {
+    this.y++;
+    if (this.collide(this.arena, this.tetromino)) {
+      this.y--;
+      this.merge(this.arena, this.tetromino);
+      this.round();
     }
   }
-}
 
-function playerReset () {
-  const pieces = "IOLJSZT";
-  player.matrix = getPiece(pieces[Math.floor(Math.random() * pieces.length)]);
-  player.pos.x = Math.floor(arena[0].length / 2);
-  player.pos.y = 0;
-}
-
-document.addEventListener("keydown", ({ keyCode }) => {
-  switch (keyCode) {
-    case 37:
-      // movement to left
-      playerMove(-1);
-      break;
-    case 38:
-      // movement rotaion
-      playerRotate();
-      break;
-    case 39:
-      // movement to right
-      playerMove(1);
-      break;
-    case 40:
-      // movement to down
-      playerDrop();
-      break;
-    default:
-      break;
+  movePlayer (direction) {
+    this.x += direction;
+    if (this.collide(this.arena, this.tetromino)) this.x -= direction;
   }
-});
 
-function update (time = 0) {
-  const deltaTime = time - lastTime;
-  lastTime = time;
-  dropCounter += deltaTime;
-  if (dropCounter > dropInterval) playerDrop();
+  rotatePlayer () {
+    const previousX = this.x; // previous x tetromino position
+    const previousT = this.tetromino.slice(); // previous tetromino rotation
 
-  context.clearRect(0, 0, canvas.width, canvas.height);
+    let offset = -1;
+    this.tetromino = this.rotate(this.tetromino);
 
-  draw();
+    while (this.collide(this.arena, this.tetromino)) {
+      this.x += offset;
+      offset = -(offset + (offset > 0 ? 1 : -1));
 
-  requestAnimationFrame(update);
-} update();
+      if (offset > this.tetromino.length) {
+        this.x = previousX;
+        this.tetromino = previousT;
+        break;
+      }
+    }
+  }
+
+  // =======@GAME CONTROLLERS@=======
+  setupKeyboard () {
+    window.addEventListener("keydown", ({ keyCode }) => {
+      switch (keyCode) {
+        case 13: // ENTER
+          this.start();
+          break;
+        case 27: // ESC
+          this.stop();
+          break;
+        case 37: // ARROW LEFT
+          this.movePlayer(-1);
+          break;
+        case 39: // ARROW RIGHT
+          this.movePlayer(1);
+          break;
+        case 38: // ARROW UP
+          this.rotatePlayer();
+          break;
+        case 40: // ARROW DOWN
+          this.stopDropper();
+          this.dropPlayer();
+          this.startDropper();
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  getTetromino (tetrominoKey) {
+    switch (tetrominoKey) {
+      case "O":
+        return tetrominos[0];
+      case "T":
+        return tetrominos[1];
+      case "S":
+        return tetrominos[2];
+      case "Z":
+        return tetrominos[3];
+      case "L":
+        return tetrominos[4];
+      case "J":
+        return tetrominos[5];
+      case "I":
+        return tetrominos[6];
+      default:
+        break;
+    }
+  }
+
+  sweepLines () {
+    for (let y = this.arena.length - 1; y >= 0; y--) {
+      const isSolidLine = this.arena[y].every(value => value);
+
+      if (!isSolidLine) continue;
+
+      const solidLine = this.arena.splice(y, 1)[0].fill(0);
+      this.arena.unshift(solidLine);
+      y++;
+    }
+  }
+
+  round () {
+    const tetrominoKeys = variables.TETROMINOS;
+    const randomKeyIndex = Math.random() * tetrominoKeys.length | 0;
+    const randomTetromino = this.getTetromino(tetrominoKeys[randomKeyIndex]);
+    const widthCenter = (configs.W_ARENA - randomTetromino.length) / 2 | 0;
+
+    this.x = widthCenter;
+    this.y = 0; // TODO: figure out the toppest y position
+    this.tetromino = randomTetromino;
+
+    if (this.collide(this.arena, this.tetromino)) this.gameOver();
+  }
+
+  startTimer () {
+    this.timer = setInterval(() => this.timerCounter++, variables.T_INTERVAL);
+  }
+
+  stopTimer () {
+    clearInterval(this.timer);
+  }
+
+  startDropper () {
+    this.dropper = setInterval(() => this.render(), this.dropperInterval);
+  }
+
+  stopDropper () {
+    clearInterval(this.dropper);
+  }
+
+  start () {
+    this.startTimer();
+    this.startDropper();
+  }
+
+  stop () {
+    this.stopTimer();
+    this.stopDropper();
+  }
+
+  gameOver () {
+    console.log("GAME IS OVER: ", { time: this.timerCounter, score: this.score });
+    this.stop();
+  }
+
+  // fired by dropper interval function
+  render () {
+    this.dropPlayer();
+  }
+
+  drawMatrix (matrix, position) {
+    matrix.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) {
+          context.beginPath();
+          context.fillStyle = "gray"; // TODO: dynamic color painting
+          context.fillRect(position.x + x, position.y + y, 1, 1);
+        }
+      });
+    });
+  }
+
+  draw () {
+    // draw canvas
+    context.beginPath();
+    context.fillStyle = "#305b6b";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    this.drawMatrix(this.arena, { x: 0, y: 0 });
+    this.drawMatrix(this.tetromino, { x: this.x, y: this.y });
+  }
+
+  preload () {
+    this.setupKeyboard();
+    this.round();
+  }
+}
+
+// TODO: create Stream class
+function stream (game) { // DESC: will demonstrate game proccess on canvas
+  context.clearRect(0, 0, 240, 400);
+  game.draw();
+  requestAnimationFrame(() => stream(game));
+}
+
+function main () {
+  const game = new TetrisGame("player");
+  game.start();
+  stream(game);
+}
+
+window.addEventListener("load", main);
