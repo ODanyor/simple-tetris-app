@@ -1,8 +1,11 @@
+const timer = document.getElementById("timer");
+const score = document.getElementById("score");
+const lines = document.getElementById("lines");
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
 const configs = {
-  S_ARENA: 20, // arena scale
+  S_ARENA: 40, // arena scale
   W_ARENA: 12, // arena width
   H_ARENA: 20, // arena height
 };
@@ -87,14 +90,14 @@ class GameTetris {
   }
 
   // =======@UNIVERSAL@=======
-  createMatrix (width, height) { // DESC: creates height number of array with width number of array
+  createMatrix (width, height) {
     const matrix = [];
     while (height--) matrix.push(new Array(width).fill(0));
 
     return matrix;
   }
 
-  merge (arena, matrix) { // DESC: merges matrix array into arena array
+  merge (arena, matrix) {
     matrix.forEach((row, y) => {
       row.forEach((value, x) => {
         if (value) arena[y + this.y][x + this.x] = value;
@@ -104,7 +107,7 @@ class GameTetris {
     this.sweepLines();
   }
 
-  collide (arena, matrix) { // DESC: checks for matrix array existance in arena array
+  collide (arena, matrix) {
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
         if (
@@ -120,7 +123,7 @@ class GameTetris {
     return false;
   }
 
-  rotate (matrix) { // DESC: rotates matrix array by swapping it's rows
+  rotate (matrix) {
     const rotatedTetromino = [];
 
     for (let y = 0; y < matrix.length; y++) {
@@ -169,6 +172,7 @@ class GameTetris {
   // =======@GAME CONTROLLERS@=======
   setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => {
+      console.log("KEY CODE: ", keyCode);
       switch (keyCode) {
         case 13: // ENTER
           this.start();
@@ -177,17 +181,23 @@ class GameTetris {
           this.stop();
           break;
         case 37: // ARROW LEFT
+        case 65: // A
           this.movePlayer(-1);
           break;
         case 39: // ARROW RIGHT
+        case 68: // D
           this.movePlayer(1);
           break;
+        case 32: // SPACE
         case 38: // ARROW UP
+        case 87: // W
           this.rotatePlayer();
           break;
         case 40: // ARROW DOWN
+        case 83: // S
           this.stopDropper();
           this.dropPlayer();
+          this.score += 5;
           this.startDropper();
           break;
         default:
@@ -218,6 +228,8 @@ class GameTetris {
   }
 
   sweepLines () {
+    let solidLines = 0;
+
     for (let y = this.arena.length - 1; y >= 0; y--) {
       const isSolidLine = this.arena[y].every(value => value);
 
@@ -225,8 +237,13 @@ class GameTetris {
 
       const solidLine = this.arena.splice(y, 1)[0].fill(0);
       this.arena.unshift(solidLine);
+
+      solidLines++;
       y++;
     }
+    
+    this.score += solidLines * 100; // TODO: nintendo scoring system
+    this.lines += solidLines;
   }
 
   round () {
@@ -269,11 +286,15 @@ class GameTetris {
   }
 
   gameOver () {
-    console.log("GAME IS OVER: ", { time: this.timerCounter, score: this.score });
     this.stop();
   }
 
-  // fired by dropper interval function
+  updateIndicators () {
+    timer.innerHTML = timeConverter(this.timerCounter);
+    score.innerText = this.score;
+    lines.innerText = this.lines;
+  }
+
   render () {
     this.dropPlayer();
   }
@@ -313,10 +334,24 @@ class GameTetris {
   }
 }
 
-// TODO: create Stream class
+function timeConverter (seconds) {
+  let min = seconds / 60 | 0;
+  let sec = seconds % 60;
+  if (min < 10) min = "0" + min;
+  if (sec < 10) sec = "0" + sec;
+
+  min = String(min);
+  sec = String(sec);
+
+  return min.concat(":", sec);
+}
+
 function stream (game) { // DESC: will demonstrate game proccess on canvas
   context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
+
   game.draw();
+  game.updateIndicators();
+
   requestAnimationFrame(() => stream(game));
 }
 
@@ -325,5 +360,6 @@ function main () {
   game.start();
   stream(game);
 }
+
 
 window.addEventListener("load", main);

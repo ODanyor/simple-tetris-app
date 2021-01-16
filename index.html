@@ -7,7 +7,27 @@
   <title>Index</title>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+  <div class="game">
+    <div class="game_interface"></div>
+  
+    <div class="game_indicators">
+      <div class="game_indicators-item">
+        <span>timer: </span>
+        <span id="timer"></span>
+      </div>
+      <div class="game_indicators-item">
+        <span>score: </span>
+        <span id="score"></span>
+      </div>
+      <div class="game_indicators-item">
+        <span>lines: </span>
+        <span id="lines"></span>
+      </div>
+    </div>
+  
+    <canvas id="canvas"></canvas>
+  </div>
+
   <script type="text/javascript" src="./scripts.js"></script>
   <noscript>Please, activate JavaScript for your browser</noscript>
 </body>
