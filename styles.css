@@ -15,6 +15,60 @@ body {
   margin: 0 auto;
 }
 
+.game_interface {
+  position: fixed;
+  background-color:rgb(100, 100, 100);
+  width: 350px;
+  height: 200px;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+}
+
+.game_interface form {
+  width: 200px;
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.game_interface button {
+  cursor: pointer;
+  border: none;
+  background-color:#ba3d3d;;
+  width: 200px;
+  height: 50px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+  transition: filter 0.1s ease;
+}
+
+.game_interface button:hover {
+  filter: brightness(125%);
+}
+
+.game_interface button:active {
+  filter: brightness(150%);
+}
+
+.game_interface-name {
+  width: 100%;
+  font-size: 28px;
+  display: flex;
+}
+
+.game_interface-name input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #ffffff;
+  background: none;
+  font-size: 22px;
+  color: #ffffff;
+}
+
 .game_indicators {
   display: flex;
   align-items: baseline;

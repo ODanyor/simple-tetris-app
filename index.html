@@ -8,7 +8,15 @@
 </head>
 <body>
   <div class="game">
-    <div class="game_interface"></div>
+    <div class="game_interface">
+      <form id="game-form">
+        <div class="game_interface-name">
+          <label for="name">Player:&nbsp;</label>
+          <input type="text" id="name" placeholder="player1" />
+        </div>
+        <button type="submit">Play</button>
+      </form>
+    </div>
   
     <div class="game_indicators">
       <div class="game_indicators-item">
@@ -28,7 +36,7 @@
     <canvas id="canvas"></canvas>
   </div>
 
-  <script type="text/javascript" src="./scripts.js"></script>
+  <script type="text/javascript" src="./scripts.js" defer></script>
   <noscript>Please, activate JavaScript for your browser</noscript>
 </body>
 </html>

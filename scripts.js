@@ -289,7 +289,7 @@ class Game {
   }
 
   updateIndicators () {
-    timer.innerHTML = timeConverter(this.timerCounter);
+    timer.innerText = timeConverter(this.timerCounter);
     score.innerText = this.score;
     lines.innerText = this.lines;
   }
