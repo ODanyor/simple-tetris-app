@@ -17,9 +17,9 @@ body {
 
 .game_interface {
   position: fixed;
+  padding: 2rem 0;
   background-color: rgba(35, 35, 35, 0.7);
   width: 350px;
-  height: 200px;
   top: 30%;
   left: 50%;
   transform: translate(-50%, -30%);
@@ -36,6 +36,7 @@ body {
 
 .game_interface button {
   cursor: pointer;
+  margin-top: 1rem;
   border: none;
   background-color:#ba3d3d;;
   width: 200px;
@@ -52,6 +53,23 @@ body {
 
 .game_interface button:active {
   filter: brightness(150%);
+}
+
+.game_interface ul {
+  margin: 1rem 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+}
+
+#game-repeat {
+  display: none;
+}
+
+#game-repeat button {
+  background-color: #4ca832;
 }
 
 .game_interface-name {

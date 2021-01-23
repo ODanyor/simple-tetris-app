@@ -1,11 +1,20 @@
 const game_interface = document.getElementsByClassName("game_interface");
 
+const game_starter = document.getElementById("game-starter");
+const game_repeat = document.getElementById("game-repeat");
+
 const timer = document.getElementById("timer");
 const score = document.getElementById("score");
 const lines = document.getElementById("lines");
 
+const result = document.getElementById("result");
+const timer_result = document.getElementById("timer_result");
+const score_result = document.getElementById("score_result");
+const lines_result = document.getElementById("lines_result");
+
 const player_name = document.getElementById("name");
 const play_button = document.getElementById("play");
+const repeat_button = document.getElementById("repeat");
 
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
@@ -294,6 +303,28 @@ class Tetris {
 
   gameOver () {
     this.stop();
+
+    result.innerText = this.name + ", you got:";
+    score_result.innerText = this.score;
+    lines_result.innerText = this.lines;
+    timer_result.innerText = this.timerCounter;
+
+    game_interface[0].style.display = "block";
+    game_repeat.style.display = "flex";
+  }
+
+  newGame () {
+    this.score = 0;
+    this.lines = 0;
+    this.timerCounter = 0;
+    this.arena = this.createMatrix(configs.W_ARENA, configs.H_ARENA);
+
+    variables.DROP_POINT = 5;
+    variables.D_INTERVAL = 1000;
+
+    game_interface[0].style.display = "none";
+    
+    this.start();
   }
 
   updateIndicators () {
@@ -364,16 +395,25 @@ function stream (game) { // DESC: will demonstrate game proccess on the canvas
 }
 
 function main () {
+  let game;
+
   play_button.addEventListener("click", (event) => {
     event.preventDefault();
 
     const player = player_name.value;
-    const game = new Tetris(player);
+    game = new Tetris(player);
 
     game.start();
     stream(game);
 
     game_interface[0].style.display = "none";
+    game_starter.style.display = "none";
+  });
+
+  repeat_button.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    game.newGame();
   });
 }
 

@@ -9,12 +9,31 @@
 <body>
   <div class="game">
     <div class="game_interface">
-      <form id="game-form">
+      <form id="game-starter">
         <div class="game_interface-name">
           <label for="name">Player:&nbsp;</label>
           <input type="text" id="name" placeholder="player1" />
         </div>
         <button id="play" type="submit">Play</button>
+      </form>
+
+      <form id="game-repeat">
+        <div id="result"></div>
+        <ul>
+          <li>
+            <img alt="icon" title="Your time" src="assets/timer.png" width="32px" height="auto" />
+            <div id="timer_result"></div>
+          </li>
+          <li>
+            <img alt="icon" title="Your score" src="assets/score.png" width="32px" height="auto" />
+            <div id="score_result"></div>
+          </li>
+          <li>
+            <img alt="icon" title="Lines count you fired" src="assets/lines.png" width="32px" height="auto" />
+            <div id="lines_result"></div>
+          </li>
+        </ul>
+        <button id="repeat" type="submit">Again</button>
       </form>
     </div>
   
