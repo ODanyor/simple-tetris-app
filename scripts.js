@@ -1,6 +1,12 @@
+const game_interface = document.getElementsByClassName("game_interface");
+
 const timer = document.getElementById("timer");
 const score = document.getElementById("score");
 const lines = document.getElementById("lines");
+
+const player_name = document.getElementById("name");
+const play_button = document.getElementById("play");
+
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
@@ -13,6 +19,7 @@ const configs = {
 const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
+  DROP_POINT: 5,
 
   TETROMINOS: "OTSZLJI", // tetromino keys
 };
@@ -69,11 +76,12 @@ const colors = [
   "#7532a8", // purple
 ];
 
-class Game {
+class Tetris {
   constructor (name) {
     this.name = name; // player name
     this.score = 0;
     this.lines = 0;
+    this.isPaused = false;
 
     this.timer = null;
     this.timerCounter = 0;
@@ -171,33 +179,29 @@ class Game {
 
   // =======@GAME CONTROLLERS@=======
   setupKeyboard () {
-    window.addEventListener("keydown", ({ keyCode }) => {
+    window.addEventListener("keydown", ({ keyCode }) => { 
+      // TODO: optimize the code bellow
       switch (keyCode) {
-        case 13: // ENTER
-          this.start();
-          break;
         case 27: // ESC
-          this.stop();
+          if (this.isPaused) this.start();
+          else this.stop();
           break;
         case 37: // ARROW LEFT
-        case 65: // A
-          this.movePlayer(-1);
+          if (!this.isPaused) this.movePlayer(-1);
           break;
         case 39: // ARROW RIGHT
-        case 68: // D
-          this.movePlayer(1);
+          if (!this.isPaused) this.movePlayer(1);
           break;
-        case 32: // SPACE
         case 38: // ARROW UP
-        case 87: // W
-          this.rotatePlayer();
+          if (!this.isPaused) this.rotatePlayer();
           break;
         case 40: // ARROW DOWN
-        case 83: // S
-          this.stopDropper();
-          this.dropPlayer();
-          this.score += 5;
-          this.startDropper();
+          if (!this.isPaused) {
+            this.stopDropper();
+            this.dropPlayer();
+            this.score += variables.DROP_POINT;
+            this.startDropper();
+          }
           break;
         default:
           break;
@@ -275,11 +279,15 @@ class Game {
   }
 
   start () {
+    this.isPaused = false;
+
     this.startTimer();
     this.startDropper();
   }
 
   stop () {
+    this.isPaused = true;
+
     this.stopTimer();
     this.stopDropper();
   }
@@ -356,10 +364,17 @@ function stream (game) { // DESC: will demonstrate game proccess on the canvas
 }
 
 function main () {
-  const game = new Game("player");
-  game.start();
-  stream(game);
-}
+  play_button.addEventListener("click", (event) => {
+    event.preventDefault();
 
+    const player = player_name.value;
+    const game = new Tetris(player);
+
+    game.start();
+    stream(game);
+
+    game_interface[0].style.display = "none";
+  });
+}
 
 window.addEventListener("load", main);

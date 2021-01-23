@@ -17,7 +17,7 @@ body {
 
 .game_interface {
   position: fixed;
-  background-color:rgb(100, 100, 100);
+  background-color: rgba(35, 35, 35, 0.7);
   width: 350px;
   height: 200px;
   top: 30%;
