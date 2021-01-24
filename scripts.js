@@ -1,23 +1,22 @@
-const game_interface = document.getElementsByClassName("game_interface");
-
-const game_starter = document.getElementById("game-starter");
-const game_repeat = document.getElementById("game-repeat");
-
-const timer = document.getElementById("timer");
-const score = document.getElementById("score");
-const lines = document.getElementById("lines");
-
-const result = document.getElementById("result");
-const timer_result = document.getElementById("timer_result");
-const score_result = document.getElementById("score_result");
-const lines_result = document.getElementById("lines_result");
-
-const player_name = document.getElementById("name");
-const play_button = document.getElementById("play");
-const repeat_button = document.getElementById("repeat");
-
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
+
+const game_interface = document.getElementsByClassName("game_interface");
+const game_st = document.getElementById("game_starter");
+const game_rp = document.getElementById("game_repeat");
+
+const indicator_timer = document.getElementById("indicator_timer");
+const indicator_score = document.getElementById("indicator_score");
+const indicator_lines = document.getElementById("indicator_lines");
+
+const result_title = document.getElementById("result_title");
+const result_timer = document.getElementById("result_timer");
+const result_score = document.getElementById("result_score");
+const result_lines = document.getElementById("result_lines");
+
+const player_nm = document.getElementById("name"); // player name
+const button_st = document.getElementById("start"); // start button
+const button_rp = document.getElementById("repeat"); // repeat button
 
 const configs = {
   S_ARENA: 40, // arena scale
@@ -323,7 +322,7 @@ class Tetris {
     variables.D_INTERVAL = 1000;
 
     game_interface[0].style.display = "none";
-    
+
     this.start();
   }
 
@@ -372,6 +371,21 @@ class Tetris {
   }
 }
 
+class Game {
+  constructor (game) {
+    this.game = game;
+  }
+
+  stream () {
+    context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
+
+    this.game.draw();
+    this.game.updateIndicators();
+
+    requestAnimationFrame(this.stream);
+  }
+}
+
 function timeConverter (seconds) {
   let min = seconds / 60 | 0;
   let sec = seconds % 60;
@@ -383,15 +397,6 @@ function timeConverter (seconds) {
   sec = String(sec);
 
   return min.concat(":", sec);
-}
-
-function stream (game) { // DESC: will demonstrate game proccess on the canvas
-  context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
-
-  game.draw();
-  game.updateIndicators();
-
-  requestAnimationFrame(() => stream(game));
 }
 
 function main () {

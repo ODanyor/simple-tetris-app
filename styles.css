@@ -64,11 +64,11 @@ body {
   text-align: center;
 }
 
-#game-repeat {
+#game_repeat {
   display: none;
 }
 
-#game-repeat button {
+#game_repeat button {
   background-color: #4ca832;
 }
 
