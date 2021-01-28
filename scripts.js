@@ -2,8 +2,8 @@ const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
 const game_interface = document.getElementsByClassName("game_interface");
-const game_st = document.getElementById("game_starter");
-const game_rp = document.getElementById("game_repeat");
+const game_st_form = document.getElementById("game_starter"); // game starter form
+const game_rp_form = document.getElementById("game_repeat"); // game repeater form
 
 const indicator_timer = document.getElementById("indicator_timer");
 const indicator_score = document.getElementById("indicator_score");
@@ -24,6 +24,7 @@ const configs = {
   H_ARENA: 20, // arena height
 };
 
+// TODO: make all varaiables dynamic
 const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
@@ -85,11 +86,11 @@ const colors = [
 ];
 
 class Tetris {
-  constructor (name) {
-    this.name = name; // player name
+  constructor () {
+    this.name = "player1"; // player name
     this.score = 0;
     this.lines = 0;
-    this.isPaused = false;
+    this.isPaused = true;
 
     this.timer = null;
     this.timerCounter = 0;
@@ -186,6 +187,29 @@ class Tetris {
   }
 
   // =======@GAME CONTROLLERS@=======
+  clearInterfaceForm () {
+    game_interface[0].style.display = "none";
+    game_interface[0].innerHTML = "";
+  }
+
+  setupInterface () {
+    button_st.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (player_nm.value) this.name = player_nm.value;
+
+      this.clearInterfaceForm();
+      this.start();
+    });
+
+    button_rp.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      this.clearInterfaceForm();
+      this.newGame();
+    });
+  }
+
   setupKeyboard () {
     window.addEventListener("keydown", ({ keyCode }) => { 
       // TODO: optimize the code bellow
@@ -252,7 +276,7 @@ class Tetris {
       solidLines++;
       y++;
     }
-    
+
     this.score += solidLines * 100; // TODO: nintendo scoring system
     this.lines += solidLines;
   }
@@ -303,13 +327,13 @@ class Tetris {
   gameOver () {
     this.stop();
 
-    result.innerText = this.name + ", you got:";
-    score_result.innerText = this.score;
-    lines_result.innerText = this.lines;
-    timer_result.innerText = this.timerCounter;
+    result_title.innerText = this.name + ", you got:";
+    result_score.innerText = this.score;
+    result_lines.innerText = this.lines;
+    result_timer.innerText = this.timerCounter;
 
     game_interface[0].style.display = "block";
-    game_repeat.style.display = "flex";
+    game_interface[0].appendChild(game_rp_form);
   }
 
   newGame () {
@@ -321,15 +345,13 @@ class Tetris {
     variables.DROP_POINT = 5;
     variables.D_INTERVAL = 1000;
 
-    game_interface[0].style.display = "none";
-
     this.start();
   }
 
   updateIndicators () {
-    timer.innerText = timeConverter(this.timerCounter);
-    score.innerText = this.score;
-    lines.innerText = this.lines;
+    indicator_timer.innerText = timeConverter(this.timerCounter);
+    indicator_score.innerText = this.score;
+    indicator_lines.innerText = this.lines;
   }
 
   render () {
@@ -365,24 +387,12 @@ class Tetris {
   }
 
   preload () {
+    game_interface[0].appendChild(game_st_form);
+
     this.setupCanvas();
     this.setupKeyboard();
+    this.setupInterface();
     this.round();
-  }
-}
-
-class Game {
-  constructor (game) {
-    this.game = game;
-  }
-
-  stream () {
-    context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
-
-    this.game.draw();
-    this.game.updateIndicators();
-
-    requestAnimationFrame(this.stream);
   }
 }
 
@@ -399,27 +409,18 @@ function timeConverter (seconds) {
   return min.concat(":", sec);
 }
 
+function stream (game) {
+  context.clearRect(0, 0, scaledArenaWidth, scaledArenaHeight);
+
+  game.draw();
+  game.updateIndicators();
+
+  requestAnimationFrame(() => stream(game));
+}
+
 function main () {
-  let game;
-
-  play_button.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    const player = player_name.value;
-    game = new Tetris(player);
-
-    game.start();
-    stream(game);
-
-    game_interface[0].style.display = "none";
-    game_starter.style.display = "none";
-  });
-
-  repeat_button.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    game.newGame();
-  });
+  const game = new Tetris();
+  stream(game);
 }
 
 window.addEventListener("load", main);
