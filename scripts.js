@@ -303,7 +303,7 @@ class Tetris {
   }
 
   startDropper () {
-    this.dropper = setInterval(() => this.render(), this.dropperInterval);
+    this.dropper = setInterval(() => this.dropPlayer(), this.dropperInterval);
   }
 
   stopDropper () {
@@ -352,10 +352,6 @@ class Tetris {
     indicator_timer.innerText = timeConverter(this.timerCounter);
     indicator_score.innerText = this.score;
     indicator_lines.innerText = this.lines;
-  }
-
-  render () {
-    this.dropPlayer();
   }
 
   drawMatrix (matrix, position) {
