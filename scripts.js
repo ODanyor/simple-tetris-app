@@ -36,7 +36,7 @@ const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
   DROP_POINT: 5,
-  LEVELUP_BY: 10,
+  LEVELUP_BY: 2,
 
   TETROMINOS: "OTSZLJI", // tetromino keys
 };
@@ -275,16 +275,16 @@ class Tetris {
   updateScore (lines) {
     switch(lines) {
       case 1:
-        this.score = configs.POINT_FOR_1 * (this.level + 1);
+        this.score += configs.POINT_FOR_1 * (this.level + 1);
         break;
       case 2:
-        this.score = configs.POINT_FOR_2 * (this.level + 1);
+        this.score += configs.POINT_FOR_2 * (this.level + 1);
         break;
       case 3:
-        this.score = configs.POINT_FOR_3 * (this.level + 1);
+        this.score += configs.POINT_FOR_3 * (this.level + 1);
         break;
       case 4:
-        this.score = configs.POINT_FOR_4 * (this.level + 1);
+        this.score += configs.POINT_FOR_4 * (this.level + 1);
         break;
       default:
         break;
@@ -370,6 +370,7 @@ class Tetris {
   newGame () {
     this.score = 0;
     this.lines = 0;
+    this.level = 0;
     this.timerCounter = 0;
     this.arena = this.createMatrix(configs.W_ARENA, configs.H_ARENA);
 
