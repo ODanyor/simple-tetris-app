@@ -36,7 +36,7 @@ const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
   DROP_POINT: 5,
-  LEVELUP_BY: 10,
+  LEVELUP_BY: 5,
 
   TETROMINOS: "OTSZLJI", // tetromino keys
 };
@@ -241,7 +241,7 @@ class Tetris {
           if (!this.isPaused) {
             this.stopDropper();
             this.dropPlayer();
-            this.score += variables.DROP_POINT;
+            this.score += variables.DROP_POINT * (this.level + 1);
             this.startDropper();
           }
           break;
@@ -320,7 +320,9 @@ class Tetris {
     this.y = 0; // TODO: figure out the toppest y position
     this.tetromino = randomTetromino;
 
-    if (this.lines % variables.LEVELUP_BY === 0) this.level = this.lines / variables.LEVELUP_BY;
+    this.dropperInterval = variables.D_INTERVAL / 2 + (1 / (this.level + 1) * variables.D_INTERVAL / 2);
+
+    if (!(this.lines % variables.LEVELUP_BY)) this.level = this.lines / variables.LEVELUP_BY;
 
     if (this.collide(this.arena, this.tetromino)) this.gameOver();
   }
