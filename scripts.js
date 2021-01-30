@@ -31,7 +31,6 @@ const configs = {
   POINT_FOR_4: 1200,
 };
 
-// TODO: make all varaiables dynamic
 const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
@@ -320,9 +319,8 @@ class Tetris {
     this.y = 0; // TODO: figure out the toppest y position
     this.tetromino = randomTetromino;
 
-    this.dropperInterval = variables.D_INTERVAL / 2 + (1 / (this.level + 1) * variables.D_INTERVAL / 2);
-
-    if (!(this.lines % variables.LEVELUP_BY)) this.level = this.lines / variables.LEVELUP_BY;
+    this.dropperInterval = variables.D_INTERVAL; // TODO: decrease by level
+    this.level = this.lines / variables.LEVELUP_BY | 0;
 
     if (this.collide(this.arena, this.tetromino)) this.gameOver();
   }
@@ -363,7 +361,7 @@ class Tetris {
     result_title.innerText = this.name + ", you got:";
     result_score.innerText = this.score;
     result_lines.innerText = this.lines;
-    result_timer.innerText = this.timerCounter;
+    result_timer.innerText = timeConverter(this.timerCounter);
 
     game_interface[0].style.display = "block";
     game_interface[0].appendChild(game_rp_form);
