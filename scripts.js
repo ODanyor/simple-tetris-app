@@ -8,6 +8,7 @@ const game_rp_form = document.getElementById("game_repeat"); // game repeater fo
 const indicator_timer = document.getElementById("indicator_timer");
 const indicator_score = document.getElementById("indicator_score");
 const indicator_lines = document.getElementById("indicator_lines");
+const indicator_level = document.getElementById("indicator_level");
 
 const result_title = document.getElementById("result_title");
 const result_timer = document.getElementById("result_timer");
@@ -22,6 +23,12 @@ const configs = {
   S_ARENA: 40, // arena scale
   W_ARENA: 12, // arena width
   H_ARENA: 20, // arena height
+
+  // points for lines
+  POINT_FOR_1: 40,
+  POINT_FOR_2: 100,
+  POINT_FOR_3: 300,
+  POINT_FOR_4: 1200,
 };
 
 // TODO: make all varaiables dynamic
@@ -29,6 +36,7 @@ const variables = {
   T_INTERVAL: 1000, // timer interval
   D_INTERVAL: 1000, // initial drop interval
   DROP_POINT: 5,
+  LEVELUP_BY: 10,
 
   TETROMINOS: "OTSZLJI", // tetromino keys
 };
@@ -90,6 +98,8 @@ class Tetris {
     this.name = "player1"; // player name
     this.score = 0;
     this.lines = 0;
+    this.level = 0;
+
     this.isPaused = true;
 
     this.timer = null;
@@ -262,6 +272,25 @@ class Tetris {
     }
   }
 
+  updateScore (lines) {
+    switch(lines) {
+      case 1:
+        this.score = configs.POINT_FOR_1 * (this.level + 1);
+        break;
+      case 2:
+        this.score = configs.POINT_FOR_2 * (this.level + 1);
+        break;
+      case 3:
+        this.score = configs.POINT_FOR_3 * (this.level + 1);
+        break;
+      case 4:
+        this.score = configs.POINT_FOR_4 * (this.level + 1);
+        break;
+      default:
+        break;
+    }
+  }
+
   sweepLines () {
     let solidLines = 0;
 
@@ -277,7 +306,7 @@ class Tetris {
       y++;
     }
 
-    this.score += solidLines * 100; // TODO: nintendo scoring system
+    if (solidLines) this.updateScore(solidLines);
     this.lines += solidLines;
   }
 
@@ -290,6 +319,8 @@ class Tetris {
     this.x = widthCenter;
     this.y = 0; // TODO: figure out the toppest y position
     this.tetromino = randomTetromino;
+
+    if (!this.lines % variables.LEVELUP_BY === 0) this.level = this.lines / variables.LEVELUP_BY;
 
     if (this.collide(this.arena, this.tetromino)) this.gameOver();
   }
@@ -352,6 +383,7 @@ class Tetris {
     indicator_timer.innerText = timeConverter(this.timerCounter);
     indicator_score.innerText = this.score;
     indicator_lines.innerText = this.lines;
+    indicator_level.innerText = this.level;
   }
 
   drawMatrix (matrix, position) {
