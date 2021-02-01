@@ -4,6 +4,7 @@ const context = canvas.getContext("2d");
 const game_interface = document.getElementsByClassName("game_interface");
 const game_st_form = document.getElementById("game_starter"); // game starter form
 const game_rp_form = document.getElementById("game_repeat"); // game repeater form
+const game_rs_form = document.getElementById("game_resume"); // game resummer form
 
 const indicator_timer = document.getElementById("indicator_timer");
 const indicator_score = document.getElementById("indicator_score");
@@ -18,6 +19,7 @@ const result_lines = document.getElementById("result_lines");
 const player_nm = document.getElementById("name"); // player name
 const button_st = document.getElementById("start"); // start button
 const button_rp = document.getElementById("repeat"); // repeat button
+const button_rs = document.getElementById("resume"); // resume button
 
 const configs = {
   S_ARENA: 40, // arena scale
@@ -211,6 +213,13 @@ class Tetris {
       this.start();
     });
 
+    button_rs.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      this.clearInterfaceForm();
+      this.start();
+    });
+
     button_rp.addEventListener("click", (event) => {
       event.preventDefault();
 
@@ -224,8 +233,15 @@ class Tetris {
       // TODO: optimize the code bellow
       switch (keyCode) {
         case 27: // ESC
-          if (this.isPaused) this.start();
-          else this.stop();
+          if (this.isPaused) {
+            this.clearInterfaceForm();
+            this.start();
+          } else {
+            game_interface[0].style.display = "block";
+            game_interface[0].appendChild(game_rs_form);
+
+            this.stop();
+          }
           break;
         case 37: // ARROW LEFT
           if (!this.isPaused) this.movePlayer(-1);
@@ -271,6 +287,7 @@ class Tetris {
     }
   }
 
+  // Nintendo Scoring System
   updateScore (lines) {
     switch(lines) {
       case 1:
@@ -319,7 +336,7 @@ class Tetris {
     this.y = 0; // TODO: figure out the toppest y position
     this.tetromino = randomTetromino;
 
-    this.dropperInterval = variables.D_INTERVAL; // TODO: decrease by level
+    this.dropperInterval = variables.D_INTERVAL / (this.level + 1) + (1 / (this.level + 1) * variables.D_INTERVAL / 2); // TODO: optimize
     this.level = this.lines / variables.LEVELUP_BY | 0;
 
     if (this.collide(this.arena, this.tetromino)) this.gameOver();

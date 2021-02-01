@@ -38,6 +38,10 @@ body {
   justify-content: space-evenly;
 }
 
+.game_interface form h1 {
+  text-align: center;
+}
+
 .game_interface button {
   cursor: pointer;
   margin-top: 1rem;
